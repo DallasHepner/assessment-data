@@ -23,7 +23,12 @@ module.exports = {
                 name varchar
             );
 
-            *****YOUR CODE HERE*****
+            create table cities ( 
+                city_id serial primary key,
+                name varchar,
+                rating integer,
+                country_id integer
+                );
 
             insert into countries (name)
             values ('Afghanistan'),
@@ -225,5 +230,36 @@ module.exports = {
             console.log('DB seeded!')
             res.sendStatus(200)
         }).catch(err => console.log('error seeding DB', err))
+    },
+
+    getCountries: (req, res) => {
+        sequelize.query(`
+        SELECT * FROM countries
+        `)
+        .then(dbRes => res.status(200).send(dbRes[0]))
+        .catch(err => console.log(err))
+    },
+
+    createCity: (req, res) => {
+        const {name, rating, countryId} = req.body
+
+        sequelize.query(`
+        insert into cities ( name, rating, country_id )
+        values ('${name}', '${rating}', '${countryId}')
+        returning *;`)
+        .then(dbRes => res.status(200).send(dbRes[0]))
+        .catch(err => console.log(err))
+    },
+
+    getCities: (req, res) => {
+        sequelize.query(`
+        SELECT city_id, a.name, rating, country_id, u.name 
+        from cities a, countries u
+        join city_id on country_id
+        join a.name on u.name
+        where a.country_id = u.country_id
+        `)
+        .then(dbRes => res.status(200).send(dbRes[0]))
+        .catch(err => console.log(err))
     }
 }
